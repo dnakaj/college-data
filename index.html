@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Daniel Nakajima</title>
+    <link href="style.css" type="text/css" rel="stylesheet"/>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+
+</head>
+
+<header>
+    <h1>College Data</h1>
+</header>
+
+<body>
+    <div id="container"></div>
+
+    <div id="info" class="info">
+        <div id="queried_info">
+            <div id="year"></div>
+            <div id="data_x"></div>
+            <div id="data_y"></div>
+        </div>
+
+        <div id="school_text">
+            <div id="school_name"></div>
+            <div id="school_country"></div>
+        </div>
+
+        <div id="school_rank">
+            <div id="school_world_rank"></div>
+            <div id="school_rank_description"></div>
+        </div>
+    </div>
+
+    <div id="options">
+        <button class="toggle_button" id="axis_button" onclick="toggleButton('axis_button', 'X Axis Selected', 'Y Axis Selected')">X Axis Selected</button
+        ><div class="dropdown"
+            ><button onclick="toggleDropdown()" id="dropbtn"></button
+        ><div id="dropdown" class="dropdown-content"></div
+        ></div
+        ><button class="toggle_button" id="data_button" onclick="toggleButton('data_button', 'Showing First 200', 'Showing Random 200')">Showing First 200</button
+        ><button class="toggle_button" id="year_button" onclick="cycleYear()">All Years</button>
+    </div>
+
+    <p>
+        This interactive website plots the selected data points from a set of 200 colleges.
+        <br/>
+        <br/>
+        <b>Selecting an Axis</b><br/>
+        To toggle between editing the X and Y axis, click the "_ Axis Selected"
+        button.
+        <br/>
+        <br/>
+        <b>Selecting the Axis Value</b><br/>
+        Click the orange button (which shows the current axis value) and select an option for the selected axis' value from the dropdown box.
+        <br/>
+        <br/>
+        <b>Changing the Data Subset</b><br/>
+        Click "Showing __ 200" to switch between the first 200 colleges and
+        200 random colleges.
+        <br/>
+        <br/>
+        <b>Viewing a Datapoint</b><br/>
+        When a datapoint is moused over, the corresponding institutions information is displayed beneath the graph (name, country, world rank, and the x and y values).
+        <br/>
+        <br/>
+        <b>Selecting a Year</b><br/>
+        Click the "All Years" button to cycle between showing data from all years, 2012, 2013, 2014, or 2015.
+    </p>
+
+</body>
+
+<script>
+    const width = 1000,
+          height = 600,
+          margin = {
+              top: 10,
+              bottom: 100,
+              left: 100,
+              right: 10,
+          };
+
+    // Global Variables
+    var x_axis = "patents"; // 0
+    var y_axis = "score" // 1
+    var x,y;
+    var allData, trimData, svg, circles;
+    var years = ["2012", "2013", "2014", "2015", "All Years"];
+     // will be updated alongside csv
+    var selectedAxis = 0;
+
+    function capitalize(label) {
+        var words = label.toLowerCase().replace(/_/g, ' ').split(' ');
+        for (var i=0; i<words.length; i++) {
+            var letters = words[i].split('');
+            letters[0] = letters[0].toUpperCase();
+            words[i] = letters.join('');
+        }
+        return words.join(' ');
+    }
+
+    function cycleYear() {
+        var button = document.getElementById("year_button");
+        for (var i=0; i<years.length; i++) {
+            if (button.innerHTML === years[i]) {
+                if (i + 1 === years.length) {
+                    button.innerHTML = years[0];
+                    getData(200, false, true, ["year"], [years[0]]);
+                } else {
+                    button.innerHTML = years[i + 1];
+                    if (i + 1 === years.length - 1) {
+                        getData(200, false, true);
+                    } else {
+                        getData(200, false, true, ["year"], [years[i + 1]]);
+                    }
+                }
+                return;
+            }
+        }
+    }
+
+    function selectAxis(axis) {
+        selectedAxis = axis;
+        updateDropdown();
+    }
+
+    function toggleButton(buttonID, onName, offName, reloadGraph) {
+        var button = document.getElementById(buttonID)
+        var classList = button.classList;
+
+        if (classList.length === 2) { // Button on
+            classList.remove("toggle_off");
+            button.innerHTML = onName
+            if (buttonID === "data_button") { getData(200, false, true); }
+            else if (buttonID === "axis_button") { selectAxis(0) }
+        } else { // Button off
+            classList.add("toggle_off");
+            button.innerHTML = offName
+            if (buttonID === "data_button") { getData(200, true, true); }
+            else if (buttonID === "axis_button") { selectAxis(1) }
+        }
+    }
+
+    function updateGraph(resetData) {
+        // Scaling
+        var x_range = d3.extent(trimData, function(d) { return d[x_axis];});
+        var y_range = d3.extent(trimData, function(d) { return d[y_axis];});
+
+        x = d3.scaleLinear()
+            .domain(x_range)
+            .range([margin.left, width - margin.right]);
+
+        y = d3.scaleLinear()
+            .domain(y_range)
+            .range([height - margin.bottom, margin.top]);
+
+        if (typeof svg === 'undefined') {
+            svg = d3.select("#container").append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .style("margin", "0 auto")
+                .style("display", "block")
+                .style("overflow", "visible")
+        } else {
+            svg.selectAll("text").remove();
+            svg.selectAll("g").remove();
+        }
+
+        if (typeof circles !== 'undefined' && !resetData) {
+            svg.selectAll("circle")
+                .transition()
+                    .duration(1500)
+                    .attr("cx", function(d) { return x(d[x_axis]);})
+                    .attr("cy", function(d) { return y(d[y_axis]);})
+
+        } else {
+            circles = svg.selectAll("circle")
+                .data(trimData, function(d) { return d.world_rank + "" + d.year}) // should be unique, but re-check.
+
+            if (resetData) {
+                circles.exit()
+                    .attr("fill", "blue")
+                    .transition("fade")
+                        .duration(500)
+                        .attr("r", 0)
+                        .remove() // sometimes removes too many?
+            }
+
+            // Display data
+            circles.enter()
+                .append("circle")
+                .attr("cx", function(d) { return x(d[x_axis]);})
+                .attr("cy", function(d) { return y(d[y_axis]);})
+                .attr("r", 5)
+                .attr("opacity", 0.7)
+                .attr("fill", "red")
+                .on("mouseover", function(d) {
+                    console.log(d.year);
+                    d3.select(this)
+                        .raise()
+                        .transition()
+                            .duration(500)
+                            .attr("fill", "green")
+                            .attr("r", 8)
+                            .attr("opacity", 1.0)
+
+                    document.getElementById("school_rank_description").innerHTML = "World Rank";
+
+                    // Is this a place where it'd make more sense to just use innerHTML?
+                    document.getElementById("info").classList.toggle("show");
+                    document.getElementById("year").innerHTML = "Year: " + d.year;
+                    document.getElementById("data_x").innerHTML = capitalize(x_axis) + ": " + d[x_axis];
+                    document.getElementById("data_y").innerHTML = capitalize(y_axis) + ": " + d[y_axis];
+                    document.getElementById("school_name").innerHTML = d.institution;
+                    document.getElementById("school_country").innerHTML = d.country;
+                    document.getElementById("school_world_rank").innerHTML = d.world_rank;
+                })
+                .on("mouseleave", function() {
+                    d3.select(this)
+                        .transition()
+                            .duration(500)
+                            .attr("fill", "red")
+                            .attr("r", 5)
+                            .attr("opacity", 0.7)
+
+                    document.getElementById("info").classList.toggle("show");
+                    document.getElementById("year").innerHTML = "";
+                    document.getElementById("data_x").innerHTML = "";
+                    document.getElementById("data_y").innerHTML = "";
+                    document.getElementById("school_rank_description").innerHTML = "";
+                    document.getElementById("school_name").innerHTML = "";
+                    document.getElementById("school_country").innerHTML = "";
+                    document.getElementById("school_world_rank").innerHTML = "";
+                })
+
+
+        }
+
+        // Axis labels
+        svg.append("text")
+            .attr("class", "label")
+            .attr("text-anchor", "middle")
+            .attr("x", width/2)
+            .attr("y", height - margin.bottom/2)
+            .text(capitalize(x_axis))
+        svg.append("text")
+            .attr("class", "label")
+            .attr("text-anchor", "middle")
+            .attr("y", margin.left/2)
+            .attr("x", -1 * (height - margin.bottom)/2)
+            .text(capitalize(y_axis))
+            .attr("transform", `rotate(-90)`)
+
+        // Axis lines
+        svg.append("g")
+            .attr("transform", `translate(0, ${height - margin.bottom})`)
+            .call(d3.axisBottom(x).ticks(5));
+        svg.append("g")
+            .attr("transform", `translate(${margin.left}, 0)`)
+            .call(d3.axisLeft(y).ticks(5));
+    }
+
+    // Dropdown functions
+    selectAxis(0); // just to update the button when the page first loads
+    function updateDropdown() { document.getElementById("dropbtn").innerHTML = capitalize(selectedAxis === 0 ? x_axis : y_axis); }
+    function toggleDropdown() { document.getElementById("dropdown").classList.toggle("show"); }
+
+    getData(200, false, false);
+    // DATA_FILTER an array of string DATA_FILTER_VALUE an array of var
+    function getData(amount, random, resetData, data_filter, data_filter_value) {
+        d3.csv("cwurData.csv", function(error, data) {
+            data.forEach(function strToNum(d) {
+                d.world_rank = +d.world_rank;
+                d.national_rank = +d.national_rank;
+                d.quality_of_education = +d.quality_of_education;
+                d.alumni_employment = +d.alumni_employment;
+                d.quality_of_faculty = +d.quality_of_faculty;
+                d.publications = +d.publications;
+                d.influence = +d.influence;
+                d.citations = +d.citations;
+                d.patents = +d.patents;
+                d.score = +d.score;
+                d.year = +d.year;
+            });
+
+            var dropdown = document.getElementById("dropdown");
+            dropdown.innerHTML = "";
+
+            var filteredData = data;
+
+            if (typeof data_filter != 'undefined' && typeof data_filter_value != 'undefined') {
+                filteredData = data.filter(function(d) {
+                    for (var i=0; i<data_filter.length; i++) {
+                        if (d[data_filter[i]] == data_filter_value[i]) {
+                            var blah =0;
+                        } else {
+                            return false;
+                        }
+                    }
+                    return true;
+                })
+            }
+
+            if (random) {
+                // jump around and take 10 20-school slices of the dataset
+                // total size = 2200
+                // chunk size = 200 because if it = 220, there is a (basically impossible) chance that the trimData will reach outside the bounds of the dataset (220 + 20) * 10
+
+                var chunkSize = (data.length - 200)/10;
+                var index = Math.round(Math.random() * (chunkSize));
+                trimData = [];
+                for (var i=0; i<10; i++) {
+                    trimData = trimData.concat(filteredData.slice(index, index + 20));
+                    index = index + 20 + Math.round(Math.random() * chunkSize);
+                }
+            } else {
+                trimData = filteredData.slice(0, 200);
+            }
+
+            data.columns.forEach(function addToDropdown(col) {
+                if (col !== "broad_impact" && col !== "institution" && col !== "country") {
+                    var a = document.createElement("A");
+                    a.appendChild(document.createTextNode(capitalize(col)));
+                    a.onclick = function() {
+                        if (selectedAxis === 0) {
+                            x_axis = col;
+                        } else {
+                            y_axis = col;
+                        }
+
+                        toggleDropdown();
+                        updateDropdown();
+                        updateGraph();
+                    }
+                    dropdown.appendChild(a);
+                }
+            });
+
+            updateGraph(resetData);
+        });
+    }
+</script>
+</html>

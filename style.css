@@ -1,0 +1,152 @@
+body {
+    font-family: 'Georgia', serif;
+    margin: 0 auto;
+    padding-top: 0em;
+    padding-left: 1em;
+    padding-right: 1em;
+    height: 30em;
+    background-color: rgb(244, 243, 237);
+    text-align: center;
+}
+
+main { background-color: rgb(244, 243, 237); }
+
+header h1,h3 {
+    /*display: inline;*/
+    text-align: center;
+    vertical-align: middle;
+}
+svg {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+body p {
+    padding-top: 20px;
+    margin: 0 auto;
+    width: 40%;
+    font-size: 1.2em;
+}
+
+/* Toggleable buttons */
+.toggle_button {
+    font-family: 'Georgia', serif;
+    min-width: 160px;
+    border: none;
+    cursor: grab;
+    padding: 16px;
+    font-size: 16px;
+    color: white;
+    background-color: rgb(57, 194, 99);
+    border-bottom: 3px outset rgb(57, 194, 99);
+    border-radius: 10px;
+    margin-left: 2px;
+    margin-right: 2px;
+}
+
+.toggle_button:hover {
+    background-color: rgb(56, 153, 85);
+}
+
+.toggle_off {
+    background-color: #5393df;
+    border-bottom: 3px outset #5393df;
+}
+
+.toggle_off:hover {
+    background-color: #447bbb;
+}
+
+.info {
+    display: none;
+}
+
+#school_text {
+    display: inline-block;
+    margin-right: 15px;
+}
+
+#school_name {
+    font-size: 40px;
+    margin-bottom: 15px;
+}
+
+#school_country {
+    text-align: right;
+    font-size: 25px;
+}
+
+#queried_info { font-size: 20px; }
+
+#data_x {
+    display: inline-block;
+    margin-right: 10px;
+}
+#data_y {
+    display: inline-block;
+    margin-left: 10px;
+}
+
+#school_rank {
+    display: inline-block;
+    font-size: 5em;
+}
+
+#school_rank_description { font-size: 15px;}
+
+/* Button Stuff from: https://www.w3schools.com/howto/howto_js_dropdown.asp */
+
+ /* Dropdown Button */
+#dropbtn {
+    background-color: #df8553;
+    min-width: 160px;
+    color: white;
+    padding: 16px;
+    font-size: 16px;
+    border: none;
+    cursor: grab;
+    border-bottom: 3px outset #df8553;
+    border-radius: 10px;
+    margin-left: 2px;
+    margin-right: 2px;
+    font-family: 'Georgia', serif;
+}
+
+/* Dropdown button on hover & focus */
+#dropbtn:hover, #dropbtn:focus {
+    background-color: #b57049;
+}
+
+/* The container <div> - needed to position the dropdown content */
+.dropdown {
+    padding-top: 10px;
+    position: relative;
+    display: inline-block;
+}
+
+/* Dropdown Content (Hidden by Default) */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: rgb(240, 240, 240);
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+/* Links inside the dropdown */
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+/* Change color of dropdown links on hover */
+.dropdown-content a:hover {
+    background-color: rgb(184, 184, 184);
+    cursor: grab;
+}
+
+/* Show the dropdown menu (use JS to add this class to the .dropdown-content container when the user clicks on the dropdown button) */
+.show {display:block;}
