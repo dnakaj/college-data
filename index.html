@@ -4,6 +4,7 @@
     <meta charset="utf-8"/>
     <title>Daniel Nakajima</title>
     <link href="style.css" type="text/css" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css?family=Lato|Open+Sans:600" rel="stylesheet">
     <script src="https://d3js.org/d3.v4.min.js"></script>
 
 </head>
@@ -109,16 +110,16 @@
         }
     }
 
-    function getDataByYear(currentYear) {
+    function getDataByYear(currentYear, randomData) {
         var button = document.getElementById("year_button");
         if (currentYear === years.length) {
             currentYear = 0;
         }
         button.innerHTML = years[currentYear];
         if (currentYear !== years.length - 1) {
-            getData(200, false, true, ["year"], [years[currentYear]]);
+            getData(200, randomData, true, ["year"], [years[currentYear]]);
         } else {
-            getData(200, false, true);
+            getData(200, randomData, true);
         }
     }
 
@@ -138,12 +139,12 @@
         if (classList.length === 2) { // Button on
             classList.remove("toggle_off");
             button.innerHTML = onName
-            if (buttonID === "data_button") { getDataByYear(getCurrentYear()); }
+            if (buttonID === "data_button") { getDataByYear(getCurrentYear(), false); }
             else if (buttonID === "axis_button") { selectAxis(0) }
         } else { // Button off
             classList.add("toggle_off");
             button.innerHTML = offName
-            if (buttonID === "data_button") { getDataByYear(getCurrentYear()); }
+            if (buttonID === "data_button") { getDataByYear(getCurrentYear(), true); }
             else if (buttonID === "axis_button") { selectAxis(1) }
         }
     }
@@ -182,7 +183,8 @@
 
         } else {
             circles = svg.selectAll("circle")
-                .data(trimData, function(d) { return d.world_rank + "" + d.year}) // should be unique, but re-check.
+                .data(trimData, function(d) { return d.world_rank.toString() + d.year.toString()}) // should be unique, but re-check.
+
 
             if (resetData) {
                 circles.exit()
@@ -192,7 +194,6 @@
                         .attr("r", 0)
                         .remove() // sometimes removes too many?
             }
-
             // Display data
             circles.enter()
                 .append("circle")
@@ -202,7 +203,6 @@
                 .attr("opacity", 0.7)
                 .attr("fill", "red")
                 .on("mouseover", function(d) {
-                    console.log(d.year);
                     d3.select(this)
                         .raise()
                         .transition()
@@ -211,7 +211,7 @@
                             .attr("r", 8)
                             .attr("opacity", 1.0)
 
-                    document.getElementById("school_rank_description").innerHTML = "World Rank";
+                    document.getElementById("school_rank_description").innerHTML = resetData + "World Rank";
 
                     // Is this a place where it'd make more sense to just use innerHTML?
                     document.getElementById("info").classList.toggle("show");
@@ -298,9 +298,7 @@
             if (typeof data_filter != 'undefined' && typeof data_filter_value != 'undefined') {
                 filteredData = data.filter(function(d) {
                     for (var i=0; i<data_filter.length; i++) {
-                        if (d[data_filter[i]] == data_filter_value[i]) {
-                            var blah =0;
-                        } else {
+                        if (d[data_filter[i]].toString() !== data_filter_value[i]) {
                             return false;
                         }
                     }

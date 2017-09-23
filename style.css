@@ -1,5 +1,5 @@
 body {
-    font-family: 'Georgia', serif;
+    font-family: 'Lato', sans-serif;
     margin: 0 auto;
     padding-top: 0em;
     padding-left: 1em;
@@ -13,6 +13,7 @@ main { background-color: rgb(244, 243, 237); }
 
 header h1,h3 {
     /*display: inline;*/
+    font-family: 'Open Sans', sans-serif;
     text-align: center;
     vertical-align: middle;
 }
@@ -22,6 +23,7 @@ svg {
 }
 
 body p {
+    font-family: 'Lato', sans-serif;
     padding-top: 20px;
     margin: 0 auto;
     width: 40%;
@@ -30,7 +32,7 @@ body p {
 
 /* Toggleable buttons */
 .toggle_button {
-    font-family: 'Georgia', serif;
+    font-family: 'Open Sans', sans-serif;
     min-width: 160px;
     border: none;
     cursor: grab;
@@ -98,6 +100,7 @@ body p {
 
  /* Dropdown Button */
 #dropbtn {
+    font-family: 'Open Sans', sans-serif;
     background-color: #df8553;
     min-width: 160px;
     color: white;
@@ -109,7 +112,6 @@ body p {
     border-radius: 10px;
     margin-left: 2px;
     margin-right: 2px;
-    font-family: 'Georgia', serif;
 }
 
 /* Dropdown button on hover & focus */
