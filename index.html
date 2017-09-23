@@ -100,24 +100,30 @@
         return words.join(' ');
     }
 
-    function cycleYear() {
+    function getCurrentYear() {
         var button = document.getElementById("year_button");
         for (var i=0; i<years.length; i++) {
             if (button.innerHTML === years[i]) {
-                if (i + 1 === years.length) {
-                    button.innerHTML = years[0];
-                    getData(200, false, true, ["year"], [years[0]]);
-                } else {
-                    button.innerHTML = years[i + 1];
-                    if (i + 1 === years.length - 1) {
-                        getData(200, false, true);
-                    } else {
-                        getData(200, false, true, ["year"], [years[i + 1]]);
-                    }
-                }
-                return;
+                return i;
             }
         }
+    }
+
+    function getDataByYear(currentYear) {
+        var button = document.getElementById("year_button");
+        if (currentYear === years.length) {
+            currentYear = 0;
+        }
+        button.innerHTML = years[currentYear];
+        if (currentYear !== years.length - 1) {
+            getData(200, false, true, ["year"], [years[currentYear]]);
+        } else {
+            getData(200, false, true);
+        }
+    }
+
+    function cycleYear() {
+        getDataByYear(getCurrentYear() + 1);
     }
 
     function selectAxis(axis) {
@@ -132,12 +138,12 @@
         if (classList.length === 2) { // Button on
             classList.remove("toggle_off");
             button.innerHTML = onName
-            if (buttonID === "data_button") { getData(200, false, true); }
+            if (buttonID === "data_button") { getDataByYear(getCurrentYear()); }
             else if (buttonID === "axis_button") { selectAxis(0) }
         } else { // Button off
             classList.add("toggle_off");
             button.innerHTML = offName
-            if (buttonID === "data_button") { getData(200, true, true); }
+            if (buttonID === "data_button") { getDataByYear(getCurrentYear()); }
             else if (buttonID === "axis_button") { selectAxis(1) }
         }
     }
